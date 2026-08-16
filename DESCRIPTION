@@ -1,0 +1,27 @@
+Package: TMScal
+Type: Package
+Title: Tumor Mutational Spectrum Prognostic Calculator
+Version: 1.0.0
+Authors@R: person("Xue", "Cheng", email = "xuecheng@example.com", role = c("aut", "cre"))
+Description: A tool for predicting prognostic risks using Tumor Mutational 
+    Spectrum (TMS) from whole exome sequencing (WES) data of MSS 
+    (microsatellite stable) cancer patients. Provides functions for 
+    data preparation, pathway stability analysis, feature selection,
+    model training, and prediction of prognostic risk groups.
+    The method uses 192 trinucleotide mutational pathways with 
+    adaptive stability-based feature selection.
+License: Apache License (>= 2.0) + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Depends: R (>= 4.0.0)
+Imports:
+    data.table,
+    survival,
+    ggplot2,
+    survminer
+Suggests:
+    testthat (>= 3.0.0),
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
+RoxygenNote: 7.3.1

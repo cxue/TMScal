@@ -1,0 +1,11 @@
+citHeader("To cite TMScal in publications use:")
+
+citEntry(
+  entry = "Article",
+  title = "TMScal: Tumor Mutational Spectrum Prognostic Calculator",
+  author = personList(as.person("Xue Cheng")),
+  year = "2026",
+  note = "In preparation"
+)
+
+textVersion = "Cheng, X. (2026). TMScal: Tumor Mutational Spectrum Prognostic Calculator."
