@@ -9,52 +9,45 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-# TMScal: Tumor Mutational Signature Calculator
+# TMScal: Tumor Mutational Spectrum Prognostic Calculator
 
 ## Overview
-TMScal calculates Tumor Mutational Signatures (TMS) from WES data of MSS cancer patients.
-
-## Quick Start
-```{r}
-library(TMScal)
-
-result <- run_all_pipeline(
-    maf_file = "data_mutations.txt",
-    clin_file = "data_clinical.txt"
-)
-```
+TMScal predicts prognostic risks using Tumor Mutational Spectrum (TMS) 
+from whole exome sequencing (WES) data of MSS (microsatellite stable) 
+cancer patients.
 
 ## Data Requirements
-   -- WES data
-   -- MSS samples
-   -- Minimum 500 samples, 100 events
+- WES (whole exome sequencing) data
+- MSS (microsatellite stable) samples
+- Minimum: 300 samples, 50 events
+- Recommended: 400+ samples, 70+ events
 
+## Quick Start
+```{r, eval=FALSE}
+library(TMScal)
 
-**.github/workflows/R-CMD-check.yml**：
-```yaml
-name: R-CMD-check
+# One-click pipeline
+result <- run_all_pipeline(
+    maf_file = "data_mutations.txt",
+    clin_file = "data_clinical.txt",
+    output_dir = "./tmscal_output"
+)
 
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-
-jobs:
-  R-CMD-check:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: r-lib/actions/setup-r@v2
-      - uses: r-lib/actions/setup-r-dependencies@v2
-        with:
-          extra-packages: |
-            any::rcmdcheck
-            any::testthat
-            any::knitr
-            any::rmarkdown
-      - uses: r-lib/actions/check-r-package@v2
+# View results
+summary(result$model)
+plot_km_curve(result$model, result$clin_data)
 ```
+
+##Methodology
+- Extract 192 trinucleotide mutational pathways
+- CLR transformation of pathway proportions
+- Bootstrap-based stability assessment (200 iterations)
+- Univariate Cox regression for prognostic value
+- Feature selection: stability < 0.07 + adaptive P-value cutoff
+- 60:40 stratified train/test split
+- TMS score = weighted sum of selected pathway CLR values
+- Tertile-based risk stratification (Low/Medium/High)
+
 
 ## LICENSE：
   Apache License (>= 2.0) + file LICENSE

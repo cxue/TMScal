@@ -12,7 +12,9 @@ train <- function(maf_file, clin_file, output_dir = "./tmscal_model") {
     # Build pathway matrix
     log_message("Building pathway matrix...")
     maf <- fread(maf_file, data.table = FALSE)
-    clin <- fread(clin_file, data.table = FALSE)
+    clin <- process_clinical_data(clin_file)
+    clin$dfs_time <- as.numeric(clin$dfs_time)
+    clin$dfs_status <- as.numeric(clin$dfs_status)
     
     pr <- build_pathway_matrix(maf)
     X <- pr$proportions
@@ -37,7 +39,7 @@ train <- function(maf_file, clin_file, output_dir = "./tmscal_model") {
     model <- list(
         pathways = colnames(X_train)[selection$idx],
         weights = cox_res$coef[selection$idx],
-        tertiles = selection$tertiles,
+        tertiles = selection$train_tertiles,
         stability_cutoff = 0.07,
         p_cutoff = selection$p_cut,
         train_eval = selection$train_eval
