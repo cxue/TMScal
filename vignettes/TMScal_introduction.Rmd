@@ -1,6 +1,6 @@
 ---
 title: "TMScal Introduction"
-author: "Xue Cheng"
+author: "Xue Cheng, Yutai Xue"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
@@ -9,33 +9,33 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-# TMScal: Tumor Mutational Spectrum Prognostic Calculator
+# TMScal: Tumor Mutational Signature Calculator
 
 ## Overview
 TMScal predicts prognostic risks using Tumor Mutational Spectrum (TMS) 
-from whole exome sequencing (WES) data of MSS (microsatellite stable) 
-cancer patients.
+from WES data of MSS cancer patients.
 
-## Data Requirements
-- WES (whole exome sequencing) data
-- MSS (microsatellite stable) samples
-- Minimum: 300 samples, 50 events
-- Recommended: 400+ samples, 70+ events
-
-## Quick Start
+## Quick Start with Example Data
 ```{r, eval=FALSE}
 library(TMScal)
 
-# One-click pipeline
-result <- run_all_pipeline(
-    maf_file = "data_mutations.txt",
-    clin_file = "data_clinical.txt",
-    output_dir = "./tmscal_output"
-)
+# Get example data paths
+maf_train <- system.file("extdata", "data_mutations_train_70.txt", package = "TMScal")
+clin_train <- system.file("extdata", "data_clinical_train_70.txt", package = "TMScal")
 
-# View results
-summary(result$model)
-plot_km_curve(result$model, result$clin_data)
+# Train model
+model <- train(maf_train, clin_train, output_dir = "./model")
+
+# Summary
+summary(model)
+
+# Predict
+maf_test <- system.file("extdata", "data_mutations_test_30.txt", package = "TMScal")
+predictions <- predict(maf_test, model)
+
+# KM curve
+plot_km_curve("./predictions.csv", 
+              system.file("extdata", "data_clinical_test_30.txt", package = "TMScal"))
 ```
 
 ##Methodology

@@ -36,19 +36,36 @@ build_pathway_matrix <- function(maf, min_mutations = 0) {
     
     if (nrow(mat) == 0) stop("No samples pass filter")
     
+    return(list(raw_counts=mat, patients=rownames(mat),
+                mutation_counts=total_muts[valid]))
+}
+
+#' CLR transformation with reference
+#' @param mat Raw count matrix
+#' @param ref_gm Optional reference geometric mean (from training)
+#' @return CLR-transformed matrix
+#' @keywords internal
+clr_transform <- function(mat, ref_gm = NULL) {
     epsilon <- 0.5
     mat_eps <- mat + epsilon
     props <- mat_eps / rowSums(mat_eps)
     props[props <= 0] <- .Machine$double.eps
     
-    clr <- t(apply(props, 1, function(row) {
-        gm <- exp(mean(log(row)))
-        log(row / gm)
-    }))
-    clr[!is.finite(clr)] <- 0
+    if (is.null(ref_gm)) {
+        # 训练模式：使用每个样本自己的几何均值
+        clr <- t(apply(props, 1, function(row) {
+            gm <- exp(mean(log(row)))
+            log(row / gm)
+        }))
+    } else {
+        # 预测模式：使用训练集的几何均值参考
+        clr <- t(apply(props, 1, function(row) {
+            log(row / ref_gm)
+        }))
+    }
     
-    return(list(proportions=clr, patients=rownames(mat),
-                raw_counts=mat, mutation_counts=total_muts[valid]))
+    clr[!is.finite(clr)] <- 0
+    return(clr)
 }
 
 #' Process clinical data
@@ -60,10 +77,8 @@ process_clinical_data <- function(clin_file) {
     first_line <- readLines(clin_file, n = 1)
     
     if (grepl("^#", first_line)) {
-        # TCGA格式：前4行是注释
         clin <- fread(clin_file, data.table = FALSE, skip = 4)
     } else {
-        # 标准格式
         clin <- fread(clin_file, data.table = FALSE)
     }
     
@@ -151,20 +166,16 @@ univariate_cox <- function(X, clin) {
     for (i in 1:ncol(X)) {
         x <- X[, i]
         if (sd(x, na.rm=TRUE) < 1e-10) {
-            coefs[i] <- 0
-            p_values[i] <- 1
-            next
+            coefs[i] <- 0; p_values[i] <- 1; next
         }
         fit <- tryCatch(coxph(y ~ x), error=function(e) NULL)
         if (!is.null(fit)) {
             coefs[i] <- coef(fit)
             p_values[i] <- summary(fit)$coefficients[1, "Pr(>|z|)"]
         } else {
-            coefs[i] <- 0
-            p_values[i] <- 1
+            coefs[i] <- 0; p_values[i] <- 1
         }
     }
-    
     return(list(coef=coefs, p_value=p_values))
 }
 
@@ -243,4 +254,47 @@ evaluate_model <- function(clin, scores, tertiles) {
     return(list(hr=hr, hr_ci=hr_ci, hr_p=hr_p, cindex=cindex,
                 logrank_p=logrank_p, trend_p=trend_p, 
                 event_rates=event_rates, group_sizes=table(clin$group)))
+}
+
+#' Calculate C-index for Cox model
+#' @param y Survival object
+#' @param scores Risk scores
+#' @return C-index
+#' @keywords internal
+calculate_cindex <- function(y, scores) {
+    fit <- tryCatch(coxph(y ~ scores), error = function(e) NULL)
+    if (!is.null(fit)) {
+        return(summary(fit)$concordance[1])
+    } else {
+        return(NA)
+    }
+}
+
+#' Build raw pathway count matrix from MAF
+#' @param maf MAF data frame
+#' @return Matrix of pathway counts (samples × 192)
+#' @keywords internal
+build_raw_matrix <- function(maf) {
+    maf_missense <- maf[grepl("Missense", maf$variant_class, ignore.case=TRUE), ]
+    maf_missense$pathway <- mapply(get_pathway,
+                                   maf_missense$ref_allele,
+                                   maf_missense$alt_allele,
+                                   maf_missense$context)
+    maf_missense <- maf_missense[!is.na(maf_missense$pathway), ]
+    
+    pathway_names <- generate_pathway_names()
+    counts <- as.data.table(table(maf_missense$sample_id, maf_missense$pathway))
+    setnames(counts, c("sample_id", "pathway", "n"))
+    
+    patients <- unique(counts$sample_id)
+    mat <- matrix(0, nrow=length(patients), ncol=192)
+    rownames(mat) <- patients
+    colnames(mat) <- pathway_names
+    
+    for (i in 1:nrow(counts)) {
+        if (counts$pathway[i] %in% pathway_names) {
+            mat[counts$sample_id[i], counts$pathway[i]] <- counts$n[i]
+        }
+    }
+    return(mat)
 }
