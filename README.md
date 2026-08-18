@@ -1,4 +1,4 @@
-# TMScal: Tumor Mutational Signature Calculator
+# TMScal: Tumor Mutational Mutational Calculator
 
 ## Overview
 TMScal is an R package for predicting prognostic risks using Tumor Mutational 
