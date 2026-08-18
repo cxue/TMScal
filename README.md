@@ -1,4 +1,4 @@
-# TMScal: Tumor Mutational Mutational Calculator
+# TMScal: Tumor Mutational Spectrum Calculator
 
 ## Overview
 TMScal is an R package for predicting prognostic risks using Tumor Mutational 
@@ -94,7 +94,8 @@ Performance (SYSUCC COADREAD MSS)
 
 ## LICENSE：
 
-  Apache License (>= 2.0) + file LICENSE
+  Apache License (>= 2.0) + file LICENSE.
+  
   The methods and systems described herein are the subject of a pending
 PCT international patent application (Application No.: PCT/CN2026/112587,
 filed on July 22, 2026).

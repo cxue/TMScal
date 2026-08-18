@@ -44,9 +44,22 @@ prepare_data <- function(maf_file, clin_file, sample_file = NULL,
         clin <- clin[clin$sample_id %in% mss_patients, ]
     }
     
+    # Ensure compatible output format (sample_id, os_time, os_event)
+    clin_out <- data.frame(
+        sample_id = clin$sample_id,
+        os_time = clin$dfs_time,
+        os_event = ifelse(clin$dfs_status == 1, 
+                          "1:Recurred/Progressed", "0:DiseaseFree"),
+        stringsAsFactors = FALSE
+    )
+    
     # Save
     fwrite(maf, file.path(output_dir, "maf_processed.txt"), sep = "\t")
-    fwrite(clin, file.path(output_dir, "clin_processed.txt"), sep = "\t")
+    fwrite(clin_out, file.path(output_dir, "clin_processed.txt"), sep = "\t")
     
-    return(list(maf = maf, clin = clin))
+    log_message(sprintf("Prepared data saved to: %s", output_dir))
+    log_message(sprintf("  MAF: %d rows", nrow(maf)))
+    log_message(sprintf("  Clinical: %d samples", nrow(clin_out)))
+    
+    return(list(maf = maf, clin = clin_out))
 }
