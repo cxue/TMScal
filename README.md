@@ -93,7 +93,12 @@ Performance (SYSUCC COADREAD MSS)
 
 
 ## LICENSE：
+<<<<<<< HEAD
   Apache License (>= 2.0) + file LICENSE. 
+=======
+  Apache License (>= 2.0) + file LICENSE.
+  
+>>>>>>> 658655d34154883f2a0efd4fb5b96992baddc4f0
   The methods and systems described herein are the subject of a pending
 PCT international patent application (Application No.: PCT/CN2026/112587,
 filed on July 22, 2026).
