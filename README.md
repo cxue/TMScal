@@ -85,7 +85,7 @@ The package includes SYSUCC COADREAD MSS data:
 - Tertile-based risk stratification (Low/Medium/High)
 
 Performance (SYSUCC COADREAD MSS)
-- Training: 483 samples, 99 events
+- Training: 462 samples, 96 events
 - Test: 206 samples, 42 events
 - Test HR (High vs Low): 2.19 (1.03-4.65)
 - Test HR P: 0.04
