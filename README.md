@@ -87,7 +87,7 @@ The package includes SYSUCC COADREAD MSS data:
 Performance (SYSUCC COADREAD MSS)
 - Training: 483 samples, 99 events
 - Test: 206 samples, 42 events
-- Test HR (High vs Low): 2.18 (1.04-4.58)
+- Test HR (High vs Low): 2.19 (1.03-4.65)
 - Test HR P: 0.04
 - Test C-index: 0.579
 
